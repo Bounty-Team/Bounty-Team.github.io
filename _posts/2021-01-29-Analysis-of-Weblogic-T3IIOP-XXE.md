@@ -50,7 +50,9 @@ Take a look at the assignment process for `listSchemaURIs`
 Therefore, we construct the following format to make `listSchemaURIs` not empty.
 
 ```xml
-<a xmlns:x='http://www.w3.org/2001/XMLSchema-instance' x:schemaLocation='http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd'/>
+<a xmlns:x='http://www.w3.org/2001/XMLSchema-instance'
+   x:schemaLocation='http://www.springframework.org/schema/mvc
+   http://www.springframework.org/schema/mvc/spring-mvc.xsd'/>
 ```
 
 Follow `this.resolveSchemaSources (listSchemaURIs)`,
@@ -67,17 +69,17 @@ So we need to find a workable XSD file locally, and I’m using `coherence-rest-
 
 Finally, we still need to go to the deserialization entry in `com.tangosol.util.ExternalizableHelper # readXmlSerializable`, which can also be used with CVE-2020-14756. The corresponding nType of `com.tangosol.coherence.servlet.AttributeHolder readXmlSerializable` is 9.
 
-![img]({{site.url}}/upload/2021-01-29-Analysis-of-Weblogic-T3IIOP-XXE/11.jpg)
+![img]({{site.url}}/upload/2021-01-29-Analysis-of-Weblogic-T3IIOP-XXE/11.png)
 
 We can override `AttributeHolder’s writeExternal` method and write the custom XML directly according to the reading process during deserialization.
 
-![img]({{site.url}}/upload/2021-01-29-Analysis-of-Weblogic-T3IIOP-XXE/12.jpg)
+![img]({{site.url}}/upload/2021-01-29-Analysis-of-Weblogic-T3IIOP-XXE/12.png)
 
 ## ***Vulnerability Repair***
 
 The false parameter passed in when instantiating `SimpleParser` prevents validation of XML format.
 
-![img]({{site.url}}/upload/2021-01-29-Analysis-of-Weblogic-T3IIOP-XXE/13.jpg)
+![img]({{site.url}}/upload/2021-01-29-Analysis-of-Weblogic-T3IIOP-XXE/13.png)
 
 ## ***Author***
 
