@@ -1,5 +1,5 @@
 ---
-title: PostgreSQL From no authorization to high privilege command execution
+title: PostgreSQL: From no authorization to high privilege command execution
 description: Cause of PostgreSQL Improper Configuration Vulnerability: As a matter of fact, it is mainly caused by improper administrator configuration.
 categories:
  - RedTeam Skill
