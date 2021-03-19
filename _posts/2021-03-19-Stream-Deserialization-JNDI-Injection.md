@@ -27,8 +27,18 @@ Review the call stack of CVE-2020-26217
 ```java
 com.thoughtworks.xstream.converters.collections.MapConverter#putCurrentEntryIntoMap
   java.util.HashMap#put
-        java.util.HashMap#hash
-            jdk.nashorn.internal.objects.NativeString#hashCode                com.sun.xml.internal.bind.v2.runtime.unmarshaller.Base64Data#toString                com.sun.xml.internal.bind.v2.runtime.unmarshaller.Base64Data#get                    com.sun.xml.internal.bind.v2.util.ByteArrayOutputStreamEx#readFrom                        java.io.SequenceInputStream#read(byte[], int, int)                        java.io.SequenceInputStream#nextStream                            javax.swing.MultiUIDefaults.MultiUIDefaultsEnumerator#nextElement                                javax.imageio.spi.FilterIterator#next                                javax.imageio.spi.FilterIterator#advance                                    javax.imageio.ImageIO.ContainsFilter#filter                                        java.lang.ProcessBuilder#start
+    java.util.HashMap#hash
+      jdk.nashorn.internal.objects.NativeString#hashCode                
+        com.sun.xml.internal.bind.v2.runtime.unmarshaller.Base64Data#toString                
+          com.sun.xml.internal.bind.v2.runtime.unmarshaller.Base64Data#get                    
+            com.sun.xml.internal.bind.v2.util.ByteArrayOutputStreamEx#readFrom                        
+              java.io.SequenceInputStream#read(byte[], int, int)                        
+                java.io.SequenceInputStream#nextStream                            
+                  javax.swing.MultiUIDefaults.MultiUIDefaultsEnumerator#nextElement                                
+                    javax.imageio.spi.FilterIterator#next                                
+                      javax.imageio.spi.FilterIterator#advance                                    
+                        javax.imageio.ImageIO.ContainsFilter#filter
+                          java.lang.ProcessBuilder#start
 ```
 
 The entry of `hashcode()->toString()` of `jdk.nashorn.internal.objects.NativeString` and the sink point `javax.imageio.ImageIO$ContainsFilter` are added to the blacklist.
@@ -79,7 +89,8 @@ So we need to find a new class, I found a chain that can be used for Java native
 java.util.PriorityQueue#readObject        
 ->java.util.PriorityQueue#heapify                
 ->java.util.PriorityQueue#siftDown                        
-->java.util.PriorityQueue#siftDownUsingComparator                              ->javafx.collections.ObservableList#sorted()#compare()
+->java.util.PriorityQueue#siftDownUsingComparator                              -
+>javafx.collections.ObservableList#sorted()#compare()
 ```
 
 ![image.png]({{site.url}}/upload/2021-03-19-Stream-Deserialization-JNDI-Injection/5FWBEkZj8bSacAe.png)
@@ -93,13 +104,38 @@ However, this chain can only be used in XStream and not in Java native deseriali
 RMI
 
 ```java
-java.util.PriorityQueue#readObject    java.util.PriorityQueue#heapify        java.util.PriorityQueue#siftDown            java.util.PriorityQueue#siftDownUsingComparator              javafx.collections.ObservableList#sorted()#compare()                  com.sun.xml.internal.bind.v2.runtime.unmarshaller.Base64Data#toString                  com.sun.xml.internal.bind.v2.runtime.unmarshaller.Base64Data#get                  com.sun.xml.internal.bind.v2.util.ByteArrayOutputStreamEx#readFrom                      java.io.SequenceInputStream#read(byte[], int, int)                      java.io.SequenceInputStream#nextStream                          com.sun.jndi.toolkit.dir.LazySearchEnumerationImpl#nextElement                              com.sun.jndi.rmi.registry.BindingEnumeration#next                                  RegistryContext.lookup
+java.util.PriorityQueue#readObject    
+java.util.PriorityQueue#heapify        
+java.util.PriorityQueue#siftDown            
+java.util.PriorityQueue#siftDownUsingComparator              
+javafx.collections.ObservableList#sorted()#compare()                  
+com.sun.xml.internal.bind.v2.runtime.unmarshaller.Base64Data#toString                  
+com.sun.xml.internal.bind.v2.runtime.unmarshaller.Base64Data#get                  
+com.sun.xml.internal.bind.v2.util.ByteArrayOutputStreamEx#readFrom                      
+java.io.SequenceInputStream#read(byte[], int, int)                      
+java.io.SequenceInputStream#nextStream                          
+com.sun.jndi.toolkit.dir.LazySearchEnumerationImpl#nextElement                              
+com.sun.jndi.rmi.registry.BindingEnumeration#next                                  
+RegistryContext.lookup
 ```
 
 Ldap
 
 ```java
-java.util.PriorityQueue#readObject    java.util.PriorityQueue#heapify        java.util.PriorityQueue#siftDown            java.util.PriorityQueue#siftDownUsingComparator              javafx.collections.ObservableList#sorted()#compare()                  com.sun.xml.internal.bind.v2.runtime.unmarshaller.Base64Data#toString                  com.sun.xml.internal.bind.v2.runtime.unmarshaller.Base64Data#get                  com.sun.xml.internal.bind.v2.util.ByteArrayOutputStreamEx#readFrom                     java.io.SequenceInputStream#read(byte[], int, int)                     java.io.SequenceInputStream#nextStream                         com.sun.jndi.toolkit.dir.LazySearchEnumerationImpl#nextElement                             com.sun.jndi.ldap.AbstractLdapNamingEnumeration#next                                 com.sun.jndi.ldap.LdapBindingEnumeration#createItem                                     javax.naming.spi.DirectoryManager#getObjectInstance
+java.util.PriorityQueue#readObject    
+java.util.PriorityQueue#heapify        
+java.util.PriorityQueue#siftDown            
+java.util.PriorityQueue#siftDownUsingComparator              
+javafx.collections.ObservableList#sorted()#compare()                  
+com.sun.xml.internal.bind.v2.runtime.unmarshaller.Base64Data#toString                  
+com.sun.xml.internal.bind.v2.runtime.unmarshaller.Base64Data#get                  
+com.sun.xml.internal.bind.v2.util.ByteArrayOutputStreamEx#readFrom                     
+java.io.SequenceInputStream#read(byte[], int, int)                     
+java.io.SequenceInputStream#nextStream                         
+com.sun.jndi.toolkit.dir.LazySearchEnumerationImpl#nextElement                             
+com.sun.jndi.ldap.AbstractLdapNamingEnumeration#next                                 
+com.sun.jndi.ldap.LdapBindingEnumeration#createItem                                     
+javax.naming.spi.DirectoryManager#getObjectInstance
 ```
 
 
