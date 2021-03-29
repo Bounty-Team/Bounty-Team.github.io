@@ -1,5 +1,5 @@
 ---
-title: Catch me if you can: Sharing the Hunting Ideas of Windows Kernel Extraction Sample*
+title: Catch me if you can: Sharing the Hunting Ideas of Windows Kernel Extraction Sample
 description: With the introduction of sandboxed mechanism in several major browsers (Chrome, Edge, IE) and word processing software (Office, Adobe Reader) on Windows platform, the demand of Windows kernel privilege vulnerability is also rising.
 categories:
  - Windows Analysis
