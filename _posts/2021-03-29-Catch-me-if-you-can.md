@@ -9,6 +9,7 @@ tags:
  - Windows Kernel Extraction
 ---
 
+#Sharing the Hunting Ideas of Windows Kernel Extraction Sample
 
 ## *Background*
 
